@@ -1,0 +1,11 @@
+{
+    "name" : "mongodb-selectors",
+    "version": "0.1.0",
+    "authors":[{
+        "email" : "joelgrenon@gmail.com",
+        "name" : "Joel Grenon",
+        "url" : "https://github.com/jgrenon"
+    }],
+    "dependencies":{},
+    "devDependencies":{}
+}
