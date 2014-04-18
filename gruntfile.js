@@ -30,6 +30,12 @@ module.exports = function(grunt) {
                 cwd: './src',
                 src: 'selector-parser.hbs',
                 dest: './build/'
+            },
+            release:{
+                files:[
+                    {src: 'package.json', dest: './build/'},
+                    {src: 'README.md', dest: './build/'}
+                ]
             }
         },
         jasmine_node: {
@@ -72,6 +78,6 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('default', ['coffeelint:app', 'coffee:all', 'copy:peg']);
-    grunt.registerTask('release', ['default', 'uglify:plugin']);
+    grunt.registerTask('release', ['default', 'copy:release', 'uglify:plugin']);
     grunt.registerTask('test', ['coffeelint:app', 'coffee:all', 'copy:peg', 'jasmine_node:unit']);
 };

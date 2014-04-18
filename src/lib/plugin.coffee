@@ -22,6 +22,7 @@ Handlebars = require 'handlebars'
 fs = require 'fs'
 path = require 'path'
 _ = require 'lodash'
+QueryEngine = require './query_engine'
 
 module.exports = (schema, options) ->
 
@@ -32,9 +33,8 @@ module.exports = (schema, options) ->
   schema.methods.select = (s, options = {}) ->
     # Always append the current object has the root of the selector
     s = @constructor.modelName + "#" + @id + " > " +s
-    query = new Query(parser.parse(s))
-
-
+    query = new QueryEngine(parser)
+    query.execute(s)
 
   # Add a static version to execute selectors without a starting context
   schema.statics.select = (s, options = {}) ->

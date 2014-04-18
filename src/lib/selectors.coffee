@@ -1,4 +1,5 @@
 mongoose = require 'mongoose'
+_ = require 'lodash'
 
 createSelectors = (parsedQuery, direction) ->
   if parsedQuery.type == "Selector"

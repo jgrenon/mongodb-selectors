@@ -73,3 +73,5 @@ class QueryEngine
     deferred = Q.defer()
     relations.selectStrategy(mongoQuery) deferred, mongoQuery, results
     return deferred.promise
+
+module.exports = QueryEngine
