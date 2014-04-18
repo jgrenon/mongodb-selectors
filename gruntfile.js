@@ -46,9 +46,32 @@ module.exports = function(grunt) {
                 NODE_ENV: "test"
             },
             unit: ['test/']
+        },
+        uglify: {
+            options: {
+                banner: [
+                    '/*! ',
+                    ' <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>',
+                    '',
+                    '*/',
+                    ''
+                ].join('\n'),
+                compress: {
+                    drop_console: true
+                }
+            },
+            plugin: {
+                files: [{
+                    expand: true,
+                    cwd: 'build',
+                    src: '**/*.js',
+                    dest: 'build'
+                }]
+            }
         }
     });
 
     grunt.registerTask('default', ['coffeelint:app', 'coffee:all', 'copy:peg']);
+    grunt.registerTask('release', ['default', 'uglify:plugin']);
     grunt.registerTask('test', ['coffeelint:app', 'coffee:all', 'copy:peg', 'jasmine_node:unit']);
 };

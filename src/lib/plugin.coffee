@@ -32,9 +32,9 @@ module.exports = (schema, options) ->
   schema.methods.select = (s, options = {}) ->
     # Always append the current object has the root of the selector
     s = @constructor.modelName + "#" + @id + " > " +s
-    query = parser.parse s
+    query = new Query(parser.parse(s))
 
-    #TODO: Execute the query
+
 
   # Add a static version to execute selectors without a starting context
   schema.statics.select = (s, options = {}) ->
