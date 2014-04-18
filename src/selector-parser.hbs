@@ -1,0 +1,182 @@
+{
+  function extractOptional(optional, index) {
+    return optional ? optional[index] : null;
+  }
+
+  function extractList(list, index) {
+    var result = [], i;
+
+    for (i = 0; i < list.length; i++) {
+      if (list[i][index] !== null) {
+        result.push(list[i][index]);
+      }
+    }
+
+    return result;
+  }
+
+  function buildList(first, rest, index) {
+    return (first !== null ? [first] : []).concat(extractList(rest, index));
+  }
+
+  function buildExpression(first, rest) {
+    var result = first, i;
+
+    for (i = 0; i < rest.length; i++) {
+      result = {
+        type:     "Expression",
+        operator: rest[i][0],
+        left:     result,
+        right:    rest[i][1]
+      };
+    }
+
+    return result;
+  }
+}
+
+start
+  = selector;
+
+selector
+    = left:simple_selector S* navigator:navigator right:selector {
+      return {
+        type:       "Selector",
+        left:       left,
+        navigator: navigator,
+        right:      right
+      };
+    }
+  / selector:simple_selector S* { return selector; }
+
+simple_selector
+  = element:element_name qualifier:(id / attribs / random)? containSelector:containSelector? filter:filter? {
+      return {
+        type:       "SimpleSelector",
+        element:    element,
+        qualifier:  qualifier,
+        filter:     filter,
+        containSelector: containSelector
+      };
+    }
+
+containSelector
+   = "{" S* selector:selector S* "}"
+   {
+    return selector
+   }
+
+attribs
+ = "[" S* attribsFirst:attrib attribsRest:("," S* attrib)* "]"
+   {
+     return {
+       type:         "AttributeSelector",
+       attributes:    buildList(attribsFirst, attribsRest, 2)
+     };
+   }
+
+attrib
+  = attribute:IDENT S* operator:("~" / "!~") S* "(" valueFirst:(IDENT / STRING) valueRest:("," S* (IDENT / STRING))* ")"
+      {
+          return {
+            attribute: attribute,
+            operator:  operator,
+            value:     buildList(valueFirst, valueRest, 2)
+          };
+      }
+  / attribute:IDENT S* operatorAndValue:(("=" / ">=" / "<=" / ">" / "<" / "!=") S* (IDENT / STRING) S*)?
+    {
+      return {
+        attribute: attribute,
+        operator:  extractOptional(operatorAndValue, 0),
+        value:     extractOptional(operatorAndValue, 2)
+      };
+    }
+
+
+filter
+ = "|" S* "**"
+    {
+      return {
+        type:      "AttributeFilter",
+        attributes: ["**"]
+      };
+    }
+ / "|" S* "*"
+    {
+      return {
+        type:      "AttributeFilter",
+        attributes: ["*"]
+      };
+    }
+ / "|" S* attributeFirst:IDENT attributeRest:("," S* IDENT)*
+    {
+      return {
+        type:      "AttributeFilter",
+        attributes: buildList(attributeFirst, attributeRest, 2)
+      };
+    }
+
+random
+  = "?" S* selector:attribs?
+  {
+    return {
+        type: "RandomSelector",
+        selector: selector
+    }
+  }
+
+id
+  = id:HASH { return { type: "IDSelector", id: id }; }
+
+element_name
+  = ({{#modelNames}}{{/modelNames}})
+
+navigator
+  = ">" S* { return "DOWN"; }
+  / "<<" S* { return "UP_LAST"; }
+  / "<" S* { return "UP_FIRST"; }
+
+nmstart
+  = [_a-z]i
+
+nmchar
+  = [_a-z0-9-\.]i
+
+string1
+  = '"' chars:([^\n\r\f\\"] / "\\" )* '"' {
+      return chars.join("");
+    }
+
+string2
+  = "'" chars:([^\n\r\f\\'] / "\\" )* "'" {
+      return chars.join("");
+    }
+
+string
+  = string1
+  / string2
+
+ident
+  = start:nmstart chars:nmchar*
+    {
+      return start + chars.join("");
+    }
+
+name
+  = chars:nmchar+ { return chars.join(""); }
+
+s
+  = [ \t\r\n\f]+
+
+S "whitespace"
+  = s
+
+STRING "string"
+  = string:string { return string; }
+
+IDENT "identifier"
+  = ident:ident { return ident; }
+
+HASH "hash"
+  = "#" name:name { return name; }
