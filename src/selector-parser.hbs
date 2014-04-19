@@ -50,7 +50,7 @@ selector
   / selector:simple_selector S* { return selector; }
 
 simple_selector
-  = element:element_name qualifier:(id / attribs / random)? containSelector:containSelector? filter:filter? {
+  = element:element_name qualifier:(id / attribs )? containSelector:containSelector? filter:filter? {
       return {
         type:       "SimpleSelector",
         element:    element,
@@ -76,7 +76,7 @@ attribs
    }
 
 attrib
-  = attribute:IDENT S* operator:("~" / "!~") S* "(" valueFirst:(IDENT / STRING) valueRest:("," S* (IDENT / STRING))* ")"
+  = attribute:IDENT S* operator:("@" / "!@") S* "(" valueFirst:(IDENT / STRING / NUMBER) valueRest:("," S* (IDENT / STRING / NUMBER))* ")"
       {
           return {
             attribute: attribute,
@@ -84,7 +84,7 @@ attrib
             value:     buildList(valueFirst, valueRest, 2)
           };
       }
-  / attribute:IDENT S* operatorAndValue:(("=" / ">=" / "<=" / ">" / "<" / "!=") S* (IDENT / STRING) S*)?
+  / attribute:IDENT S* operatorAndValue:(("=" / ">=" / "<=" / ">" / "<" / "!=") S* (IDENT / STRING / NUMBER) S*)?
     {
       return {
         attribute: attribute,
@@ -116,15 +116,6 @@ filter
         attributes: buildList(attributeFirst, attributeRest, 2)
       };
     }
-
-random
-  = "?" S* selector:attribs?
-  {
-    return {
-        type: "RandomSelector",
-        selector: selector
-    }
-  }
 
 id
   = id:HASH { return { type: "IDSelector", id: id }; }
@@ -171,6 +162,9 @@ s
 
 S "whitespace"
   = s
+
+NUMBER "number"
+  = digits:[0-9\.]+ { return parseInt(digits.join(""), 10); }
 
 STRING "string"
   = string:string { return string; }

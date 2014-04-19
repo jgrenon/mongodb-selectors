@@ -5,30 +5,36 @@ Q = require 'q'
 describe 'Mongoose MongoSelector plugin', ->
   schema = null
 
-  beforeEach ->
-    schema = new mongoose.Schema
-      id: type: String
-      field1: type: String
-      field2: type: Number
-    mongoose.model('test1', schema);
+  # Initialize our data model
+  schema = new mongoose.Schema
+    username: type: String
+    email: type: String
+    age: type: Number
+  mongoose.model('user', schema);
 
-    schema = new mongoose.Schema
-      id: type: String
-      field1: type: String
-      test1: type: String
-    mongoose.model('test2', schema);
+  schema = new mongoose.Schema
+    id: type: String
+    title: type: String
+    author: type: String
+    rating: type: Number
+  mongoose.model('story', schema);
 
-  it 'should add the select method to all schema instance', (done) ->
-    Model = mongoose.model('test2')
-    instance = new Model id: "122", field1: "test", test1: "123"
+  it 'should add the "select" method to all schema instances', () ->
+    Model = mongoose.model('story')
+    instance = new Model id: "1", title: "Story #1", author: "testuser",rating: 5
 
     expect(instance).toBeDefined()
-    expect(instance.field1).toBe("test")
-    expect(instance.test1).toBe("123")
+    expect(instance.title).toBe("Story #1")
+    expect(instance.author).toBe("testuser")
     expect(instance.select).toBeDefined()
 
-    resultP = instance.select "test1[attr=false]"
+  it 'should produce a promise for the selector result', () ->
+    Model = mongoose.model('user')
+    instance = new Model username: "testuser", email: "test@email.com", age: 35
+
+    resultP = instance.select "user[age<=70.1]"
     expect(Q.isPromise(resultP)).toBeTruthy()
-    resultP.done (result) -> expect(result).toBeDefined()
-    resultP.fail (err) -> throw err
-    resultP.finally done
+
+#    resultP.done (result) -> expect(result).toBeDefined()
+#    resultP.fail (err) -> throw err
+#    resultP.finally done
